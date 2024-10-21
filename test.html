@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Langmentor AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuração para personalizar a cor primária
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#0F8AFD", // Nova cor primária
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+            margin: 0;
+            overflow-x: auto; /* Adiciona rolagem horizontal à página */
+        }
+        h1 {
+            margin-bottom: 1px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        h2 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            text-align: center;
+            color: #666;
+        }
+        .contributions-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: auto; /* Permite rolagem horizontal se necessário */
+        }
+        .contributions {
+            display: grid;
+            grid-template-columns: repeat(52, 12px);
+            grid-gap: 2px;
+            margin-bottom: 5px;
+        }
+        .day {
+            width: 12px;
+            height: 12px;
+            background-color: #ebedf0; /* Cor padrão */
+            border-radius: 2px;
+            cursor: pointer; /* Cursor em forma de mão ao passar sobre os dias */
+            position: relative; /* Necessário para o posicionamento da tooltip */
+        }
+        /* Usando a cor primária em diferentes níveis de contribuição */
+        .day.level-0 { background-color: #ebedf0; } /* Cor padrão para 0 minutos */
+        .day.level-1 { background-color: #d4f0ff; } /* Azul claro - 1 a 10 minutos */
+        .day.level-2 { background-color: #a4d6ff; } /* Azul médio - 11 a 20 minutos */
+        .day.level-3 { background-color: #74b7ff; } /* Azul mais escuro - 21 a 30 minutos */
+        .day.level-4 { background-color: #0F8AFD; } /* Azul profundo - 31+ minutos */
+        .legend {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .legend div {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        .legend .level-0 { background-color: #ebedf0; } /* Cor para zero contribuições */
+        .legend .level-1 { background-color: #d4f0ff; } /* Azul claro - 1 a 10 minutos */
+        .legend .level-2 { background-color: #a4d6ff; } /* Azul médio - 11 a 20 minutos */
+        .legend .level-3 { background-color: #74b7ff; } /* Azul mais escuro - 21 a 30 minutos */
+        .legend .level-4 { background-color: #0F8AFD; } /* Azul profundo - 31+ minutos */
+        .legend span {
+            margin-right: 5px;
+        }
+        .month-labels {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            margin-top: 5px;
+            font-size: 0.8em;
+            text-align: center;
+        }
+        .month {
+            position: relative;
+            height: 20px; /* Altura do rótulo do mês */
+            margin-bottom: 10px;
+            margin-right: 10px;
+        }
+
+        /* Tooltip Styles */
+        .tooltip {
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            display: none; /* Inicialmente oculto */
+            white-space: nowrap; /* Para evitar quebra de linha */
+            z-index: 10; /* Para garantir que a tooltip esteja acima dos pontos */
+        }
+
+        /* Estilos responsivos */
+        @media (max-width: 600px) {
+            .contributions {
+                grid-template-columns: repeat(7, 12px); /* Uma coluna para cada dia da semana */
+            }
+            .month-labels {
+                display: none; /* Oculta os rótulos dos meses em dispositivos móveis */
+            }
+            h1 {
+                font-size: 1.2em; /* Tamanho do título para mobile */
+            }
+            h2 {
+                font-size: 1em; /* Tamanho do subtítulo para mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="mb-2 mt-4">Learning Graph</h1>
+    <h2 class="mb-4">Days You Practiced with LangmentorAI</h2>
+    <div class="contributions-container">
+        <div class="contributions" id="contributions"></div>
+        <div class="month-labels" id="month-labels"></div>
+    </div>
+    <div class="legend">
+        <span>Less</span>
+        <div class="level-0"></div>
+        <div class="level-1"></div>
+        <div class="level-2"></div>
+        <div class="level-3"></div>
+        <div class="level-4"></div>
+        <span>More</span>
+    </div>
+
+    <script>
+        const contributionsContainer = document.getElementById('contributions');
+        const monthLabelsContainer = document.getElementById('month-labels');
+        const totalDays = 365;
+        
+        // Gera um array de 365 dias com valores aleatórios de 0 a 4 para simular as contribuições
+        const contributions = Array.from({ length: totalDays }, () => Math.floor(Math.random() * 5));
+
+        // Cria a tooltip
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip';
+        document.body.appendChild(tooltip);
+
+        // Função para criar os dias e definir a classe de contribuição
+        contributions.forEach((level, index) => {
+            const day = document.createElement('div');
+            day.classList.add('day', `level-${level}`);
+            day.dataset.date = new Date(Date.now() - (totalDays - index) * 24 * 60 * 60 * 1000).toLocaleDateString(); // Armazena a data correspondente
+            day.dataset.contributions = level * 10; // Armazena o número de minutos para mostrar na tooltip (10 minutos por nível)
+
+            // Exibe a tooltip ao passar o mouse
+            day.addEventListener('mouseenter', (e) => {
+                tooltip.style.display = 'block';
+                tooltip.innerHTML = `On ${day.dataset.date}<br>You practiced ${day.dataset.contributions} minutes`; // Usando innerHTML para permitir quebras de linha
+                tooltip.style.left = `${e.pageX + 5}px`; // Posiciona a tooltip um pouco à direita do mouse
+                tooltip.style.top = `${e.pageY + 5}px`; // Posiciona a tooltip um pouco abaixo do mouse
+            });
+
+            // Esconde a tooltip ao sair
+            day.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+
+            contributionsContainer.appendChild(day);
+        });
+
+        // Adiciona rótulos dos meses
+        const monthNames = ["Jan ", " Fev ", " Mar ", " Abr ", " Mai ", " Jun ", " Jul" , " Ago ", " Set ", " Out ", " Nov ", " Dez "];
+        monthNames.forEach((month) => {
+            const monthLabel = document.createElement('div');
+            monthLabel.classList.add('month');
+            monthLabel.textContent = month;
+            monthLabelsContainer.appendChild(monthLabel);
+        });
+    </script>
+</body>
+</html>

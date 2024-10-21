@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Simple Chatbot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Configuração para personalizar a cor primária
+      tailwind.config = {
+          theme: {
+              extend: {
+                  colors: {
+                      primary: "#0F8AFD", // Nova cor primária
+                  },
+              },
+          },
+      };
+  </script>
+  </head>
+
+  <body>
+    <div class="m-4 bg-white rounded-lg p-6">
+      <p class="text-xl font-bold mb-4 text-gray-800">Step 1: Initialize WebLLM and Download Model</p>
+      <div class="download-container flex justify-between items-center mb-4">
+        <select id="model-selection" class="border border-gray-300 rounded-lg p-2 w-3/4"></select>
+        <button id="download" class="bg-primary text-white px-4 py-2 mr-8 rounded-full hover:bg-opacity-90 ml-4">Download</button>
+      </div>
+      <p id="download-status" class="hidden text-gray-500 mb-4"></p>
+
+      <p class="text-xl font-bold mb-4 text-gray-800">Step 2: Chat</p>
+      <div class="chat-container flex flex-col h-80 mb-4">
+        <div id="chat-box" class="chat-box overflow-y-auto h-full border border-gray-300 rounded-lg p-4 bg-gray-50 mb-2"></div>
+        <div id="chat-stats" class="chat-stats hidden text-gray-500 mb-2"></div>
+        <div class="chat-input-container flex">
+          <input
+            type="text"
+            id="user-input"
+            placeholder="Type a message..."
+            class="border border-gray-300 rounded-lg p-2 w-full"
+          />
+          <button id="send" disabled  class="bg-primary text-white px-4 py-2 mr-8 rounded-full hover:bg-opacity-90 ml-4">Send</button>
+        </div>
+        
+      </div>
+    </div>
+
+    <script src="./index.js" type="module"></script>
+  </body>
+</html>
